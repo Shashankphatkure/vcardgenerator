@@ -8,7 +8,7 @@ const DynamicBusinessDetails = dynamic(() => import('../../../components/Busines
 export default async function BusinessPage({ params }) {
   const { data: business, error } = await supabase
     .from('businesses')
-    .select('*, instagram_link, youtube_link, facebook_link, pinterest_link, cover_image_url')
+    .select('*, instagram_link, youtube_link, facebook_link, pinterest_link, cover_image_url, business_hours')
     .eq('id', params.id)
     .single()
 
@@ -20,6 +20,11 @@ export default async function BusinessPage({ params }) {
   if (!business) {
     return <div>Business not found</div>
   }
+
+  const formatBusinessHours = (hours) => {
+    if (!hours) return 'Not available';
+    return `${hours.open} - ${hours.close}`;
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-16 px-4 sm:px-6 lg:px-8">
@@ -47,10 +52,15 @@ export default async function BusinessPage({ params }) {
             </div>
             <div className="bg-indigo-50 p-6 rounded-xl shadow-inner">
               <h2 className="text-2xl font-semibold text-indigo-700 mb-4">Business Hours</h2>
-              {/* Add business hours here if available */}
-              <p className="text-gray-700">Monday - Friday: 9AM - 5PM</p>
-              <p className="text-gray-700">Saturday: 10AM - 2PM</p>
-              <p className="text-gray-700">Sunday: Closed</p>
+              {business.business_hours ? (
+                Object.entries(business.business_hours).map(([day, hours]) => (
+                  <p key={day} className="text-gray-700 capitalize">
+                    <span className="font-medium">{day}:</span> {formatBusinessHours(hours)}
+                  </p>
+                ))
+              ) : (
+                <p className="text-gray-700">Business hours not available</p>
+              )}
             </div>
           </div>
           

@@ -18,6 +18,18 @@ export default function BusinessActions({ business }) {
       }
     }
 
+    const formatBusinessHours = (hours) => {
+      if (!hours) return '';
+      return `${hours.open}-${hours.close}`;
+    };
+
+    let businessHoursString = '';
+    if (business.business_hours) {
+      businessHoursString = Object.entries(business.business_hours)
+        .map(([day, hours]) => `${day.toUpperCase()};${formatBusinessHours(hours)}`)
+        .join(';');
+    }
+
     const vcf = `BEGIN:VCARD
 VERSION:3.0
 FN:${business.name}
@@ -27,7 +39,7 @@ EMAIL:${business.email || ''}
 ADR:;;${business.address || ''}
 URL:${business.website_url || ''}
 NOTE:${business.description || ''}
-${photoData ? `PHOTO;ENCODING=b;TYPE=JPEG:${photoData}\n` : ''}${business.instagram_link ? `X-SOCIALPROFILE;TYPE=instagram:${business.instagram_link}\n` : ''}${business.youtube_link ? `X-SOCIALPROFILE;TYPE=youtube:${business.youtube_link}\n` : ''}${business.facebook_link ? `X-SOCIALPROFILE;TYPE=facebook:${business.facebook_link}\n` : ''}${business.pinterest_link ? `X-SOCIALPROFILE;TYPE=pinterest:${business.pinterest_link}\n` : ''}END:VCARD`
+${photoData ? `PHOTO;ENCODING=b;TYPE=JPEG:${photoData}\n` : ''}${business.instagram_link ? `X-SOCIALPROFILE;TYPE=instagram:${business.instagram_link}\n` : ''}${business.youtube_link ? `X-SOCIALPROFILE;TYPE=youtube:${business.youtube_link}\n` : ''}${business.facebook_link ? `X-SOCIALPROFILE;TYPE=facebook:${business.facebook_link}\n` : ''}${business.pinterest_link ? `X-SOCIALPROFILE;TYPE=pinterest:${business.pinterest_link}\n` : ''}${businessHoursString ? `X-BUSINESS-HOURS:${businessHoursString}\n` : ''}END:VCARD`
 
     const blob = new Blob([vcf], { type: 'text/vcard' })
     const url = URL.createObjectURL(blob)

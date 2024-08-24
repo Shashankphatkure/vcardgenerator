@@ -24,6 +24,15 @@ export default function BusinessForm() {
     facebook_link: '',
     pinterest_link: '',
     cover_image_url: '',
+    business_hours: {
+      monday: { open: '', close: '' },
+      tuesday: { open: '', close: '' },
+      wednesday: { open: '', close: '' },
+      thursday: { open: '', close: '' },
+      friday: { open: '', close: '' },
+      saturday: { open: '', close: '' },
+      sunday: { open: '', close: '' },
+    },
   });
 
   const handleSubmit = async (e) => {
@@ -55,6 +64,15 @@ export default function BusinessForm() {
         facebook_link: '',
         pinterest_link: '',
         cover_image_url: '',
+        business_hours: {
+          monday: { open: '', close: '' },
+          tuesday: { open: '', close: '' },
+          wednesday: { open: '', close: '' },
+          thursday: { open: '', close: '' },
+          friday: { open: '', close: '' },
+          saturday: { open: '', close: '' },
+          sunday: { open: '', close: '' },
+        },
       })
       router.refresh()
     } catch (error) {
@@ -68,6 +86,19 @@ export default function BusinessForm() {
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
+  };
+
+  const handleBusinessHoursChange = (day, field, value) => {
+    setFormData(prevData => ({
+      ...prevData,
+      business_hours: {
+        ...prevData.business_hours,
+        [day]: {
+          ...prevData.business_hours[day],
+          [field]: value
+        }
+      }
+    }));
   };
 
   return (
@@ -278,6 +309,28 @@ export default function BusinessForm() {
           onChange={handleChange}
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         />
+      </div>
+      
+      <div>
+        <h3 className="text-lg font-medium text-gray-900 mb-2">Business Hours</h3>
+        {Object.entries(formData.business_hours).map(([day, hours]) => (
+          <div key={day} className="flex items-center mb-2">
+            <label className="w-24 text-sm font-medium text-gray-700 capitalize">{day}</label>
+            <input
+              type="time"
+              value={hours.open}
+              onChange={(e) => handleBusinessHoursChange(day, 'open', e.target.value)}
+              className="mr-2 border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            />
+            <span className="mx-2">to</span>
+            <input
+              type="time"
+              value={hours.close}
+              onChange={(e) => handleBusinessHoursChange(day, 'close', e.target.value)}
+              className="border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+            />
+          </div>
+        ))}
       </div>
       
       <div>
