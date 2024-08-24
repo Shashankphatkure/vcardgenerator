@@ -41,6 +41,11 @@ export default function BusinessActions({ business }) {
         .join(';');
     }
 
+    const truncateDescription = (description, maxLength = 1000) => {
+      if (description.length <= maxLength) return description;
+      return description.slice(0, maxLength - 3) + '...';
+    };
+
     const vcf = `BEGIN:VCARD
 VERSION:3.0
 FN:${business.name}
@@ -49,7 +54,7 @@ TEL:${business.phone_number || ''}
 EMAIL:${business.email || ''}
 ADR:;;${business.address || ''}
 URL:${business.website_url || ''}
-NOTE:${business.description || ''}
+NOTE:${truncateDescription(business.description || '')}
 ${logoData ? `PHOTO;ENCODING=b;TYPE=JPEG:${logoData}\n` : ''}
 ${coverImageData ? `X-COVER-IMAGE;ENCODING=b;TYPE=JPEG:${coverImageData}\n` : ''}
 ${business.instagram_link ? `X-SOCIALPROFILE;TYPE=instagram:${business.instagram_link}\n` : ''}
