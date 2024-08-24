@@ -13,7 +13,7 @@ export default function Home() {
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div>
             <h2 className="text-2xl font-semibold mb-4">Add New Business</h2>
-            <BusinessForm />
+            <BusinessForm initialData={null} isEditing={false} />
           </div>
           
           <div>

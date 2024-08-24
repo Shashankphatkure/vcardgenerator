@@ -1,10 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabaseClient'
 import { useRouter } from 'next/navigation'
 
-export default function BusinessForm() {
+export default function BusinessForm({ initialData = null, isEditing = false }) {
   const router = useRouter()
   const [formData, setFormData] = useState({
     name: '',
@@ -35,51 +35,39 @@ export default function BusinessForm() {
     },
   });
 
+  useEffect(() => {
+    if (initialData) {
+      setFormData(initialData);
+    }
+  }, [initialData]);
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const { data, error } = await supabase
-        .from('businesses')
-        .insert([{ ...formData }])
+      let result;
+      if (isEditing) {
+        const { data, error } = await supabase
+          .from('businesses')
+          .update({ ...formData })
+          .eq('id', initialData.id);
+        result = { data, error };
+      } else {
+        const { data, error } = await supabase
+          .from('businesses')
+          .insert([{ ...formData }]);
+        result = { data, error };
+      }
 
-      if (error) throw error;
+      if (result.error) throw result.error;
 
-      console.log('Inserted data:', data)
-      alert('Business created successfully!')
-      setFormData({
-        name: '',
-        description: '',
-        logo_url: '',
-        website_url: '',
-        email: '',
-        phone_number: '',
-        address: '',
-        city: '',
-        state: '',
-        zip_code: '',
-        country: '',
-        category: '',
-        instagram_link: '',
-        youtube_link: '',
-        facebook_link: '',
-        pinterest_link: '',
-        cover_image_url: '',
-        business_hours: {
-          monday: { open: '', close: '' },
-          tuesday: { open: '', close: '' },
-          wednesday: { open: '', close: '' },
-          thursday: { open: '', close: '' },
-          friday: { open: '', close: '' },
-          saturday: { open: '', close: '' },
-          sunday: { open: '', close: '' },
-        },
-      })
-      router.refresh()
+      console.log(isEditing ? 'Updated data:' : 'Inserted data:', result.data)
+      alert(isEditing ? 'Business updated successfully!' : 'Business created successfully!')
+      router.push('/') // Redirect to home page
     } catch (error) {
-      console.error('Error inserting business:', error)
+      console.error('Error:', error)
       console.error('Error details:', error.details)
       console.error('Error message:', error.message)
-      alert('Error creating business. Please check the console for more details.')
+      alert(`Error ${isEditing ? 'updating' : 'creating'} business. Please check the console for more details.`)
     }
   };
 
@@ -338,7 +326,7 @@ export default function BusinessForm() {
           type="submit"
           className="w-full flex justify-center py-2 px-4 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
         >
-          Create Business
+          {isEditing ? 'Update Business' : 'Create Business'}
         </button>
       </div>
     </form>
