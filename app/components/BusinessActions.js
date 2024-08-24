@@ -5,21 +5,32 @@ import { FaShare, FaAddressCard } from 'react-icons/fa'
 
 export default function BusinessActions({ business }) {
   const createVCF = async () => {
-    let photoData = '';
-    if (business.logo_url) {
+    let logoData = '';
+    let coverImageData = '';
+
+    const fetchImageData = async (url) => {
       try {
-        const response = await fetch(business.logo_url);
+        const response = await fetch(url);
         const blob = await response.blob();
         const arrayBuffer = await blob.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
-        photoData = btoa(String.fromCharCode.apply(null, uint8Array));
+        return btoa(String.fromCharCode.apply(null, uint8Array));
       } catch (error) {
-        console.error('Error fetching logo:', error);
+        console.error('Error fetching image:', error);
+        return '';
       }
+    };
+
+    if (business.logo_url) {
+      logoData = await fetchImageData(business.logo_url);
+    }
+
+    if (business.cover_image_url) {
+      coverImageData = await fetchImageData(business.cover_image_url);
     }
 
     const formatBusinessHours = (hours) => {
-      if (!hours) return '';
+      if (!hours || !hours.open || !hours.close) return '';
       return `${hours.open}-${hours.close}`;
     };
 
@@ -39,7 +50,14 @@ EMAIL:${business.email || ''}
 ADR:;;${business.address || ''}
 URL:${business.website_url || ''}
 NOTE:${business.description || ''}
-${photoData ? `PHOTO;ENCODING=b;TYPE=JPEG:${photoData}\n` : ''}${business.instagram_link ? `X-SOCIALPROFILE;TYPE=instagram:${business.instagram_link}\n` : ''}${business.youtube_link ? `X-SOCIALPROFILE;TYPE=youtube:${business.youtube_link}\n` : ''}${business.facebook_link ? `X-SOCIALPROFILE;TYPE=facebook:${business.facebook_link}\n` : ''}${business.pinterest_link ? `X-SOCIALPROFILE;TYPE=pinterest:${business.pinterest_link}\n` : ''}${businessHoursString ? `X-BUSINESS-HOURS:${businessHoursString}\n` : ''}END:VCARD`
+${logoData ? `PHOTO;ENCODING=b;TYPE=JPEG:${logoData}\n` : ''}
+${coverImageData ? `X-COVER-IMAGE;ENCODING=b;TYPE=JPEG:${coverImageData}\n` : ''}
+${business.instagram_link ? `X-SOCIALPROFILE;TYPE=instagram:${business.instagram_link}\n` : ''}
+${business.youtube_link ? `X-SOCIALPROFILE;TYPE=youtube:${business.youtube_link}\n` : ''}
+${business.facebook_link ? `X-SOCIALPROFILE;TYPE=facebook:${business.facebook_link}\n` : ''}
+${business.pinterest_link ? `X-SOCIALPROFILE;TYPE=pinterest:${business.pinterest_link}\n` : ''}
+${businessHoursString ? `X-BUSINESS-HOURS:${businessHoursString}\n` : ''}
+END:VCARD`
 
     const blob = new Blob([vcf], { type: 'text/vcard' })
     const url = URL.createObjectURL(blob)
