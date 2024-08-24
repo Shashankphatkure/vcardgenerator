@@ -29,13 +29,23 @@ export default function EditBusiness({ params }) {
   }, [params.id, router]);
 
   if (!business) {
-    return <div>Loading...</div>;
+    return (
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-32 w-32 border-t-2 border-b-2 border-blue-500"></div>
+      </div>
+    );
   }
 
   return (
-    <div className="max-w-2xl mx-auto py-8">
-      <h1 className="text-2xl font-bold mb-4">Edit Business</h1>
-      <BusinessForm initialData={business} isEditing={true} />
+    <div className="max-w-4xl mx-auto py-12 px-4 sm:px-6 lg:px-8">
+      <div className="bg-white shadow-2xl rounded-lg overflow-hidden">
+        <div className="px-6 py-8 sm:p-10">
+          <h1 className="text-3xl font-extrabold text-gray-900 text-center mb-8">Edit Business</h1>
+          <div className="mt-8">
+            <BusinessForm initialData={business} isEditing={true} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }
