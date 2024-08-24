@@ -8,7 +8,7 @@ const DynamicBusinessDetails = dynamic(() => import('../../../components/Busines
 export default async function BusinessPage({ params }) {
   const { data: business, error } = await supabase
     .from('businesses')
-    .select('*, instagram_link, youtube_link, facebook_link, pinterest_link')
+    .select('*, instagram_link, youtube_link, facebook_link, pinterest_link, cover_image_url')
     .eq('id', params.id)
     .single()
 
@@ -25,6 +25,11 @@ export default async function BusinessPage({ params }) {
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-100 py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto bg-white shadow-2xl rounded-2xl overflow-hidden">
         <div className="relative h-64 bg-indigo-600">
+          {business.cover_image_url ? (
+            <img src={business.cover_image_url} alt={`${business.name} cover`} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-indigo-600" />
+          )}
           <img src={business.logo_url} alt={`${business.name} logo`} className="absolute bottom-0 left-8 w-32 h-32 object-cover border-4 border-white rounded-full shadow-lg transform translate-y-1/2" />
         </div>
         <div className="p-8 pt-20">

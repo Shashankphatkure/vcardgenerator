@@ -23,6 +23,7 @@ export default function BusinessForm() {
     youtube_link: '',
     facebook_link: '',
     pinterest_link: '',
+    cover_image_url: '',
   });
 
   const handleSubmit = async (e) => {
@@ -53,6 +54,7 @@ export default function BusinessForm() {
         youtube_link: '',
         facebook_link: '',
         pinterest_link: '',
+        cover_image_url: '',
       })
       router.refresh()
     } catch (error) {
@@ -261,6 +263,18 @@ export default function BusinessForm() {
           id="pinterest_link"
           name="pinterest_link"
           value={formData.pinterest_link}
+          onChange={handleChange}
+          className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
+        />
+      </div>
+      
+      <div>
+        <label htmlFor="cover_image_url" className="block text-sm font-medium text-gray-700">Cover Image URL</label>
+        <input
+          type="url"
+          id="cover_image_url"
+          name="cover_image_url"
+          value={formData.cover_image_url}
           onChange={handleChange}
           className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm py-2 px-3 focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm"
         />

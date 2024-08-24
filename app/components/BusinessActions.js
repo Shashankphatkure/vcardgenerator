@@ -4,16 +4,30 @@ import React from 'react'
 import { FaShare, FaAddressCard } from 'react-icons/fa'
 
 export default function BusinessActions({ business }) {
-  const createVCF = () => {
+  const createVCF = async () => {
+    let photoData = '';
+    if (business.logo_url) {
+      try {
+        const response = await fetch(business.logo_url);
+        const blob = await response.blob();
+        const arrayBuffer = await blob.arrayBuffer();
+        const uint8Array = new Uint8Array(arrayBuffer);
+        photoData = btoa(String.fromCharCode.apply(null, uint8Array));
+      } catch (error) {
+        console.error('Error fetching logo:', error);
+      }
+    }
+
     const vcf = `BEGIN:VCARD
 VERSION:3.0
 FN:${business.name}
 ORG:${business.name}
-TEL:${business.phone_number}
-EMAIL:${business.email}
-ADR:;;${business.address}
-URL:${business.website_url}
-END:VCARD`
+TEL:${business.phone_number || ''}
+EMAIL:${business.email || ''}
+ADR:;;${business.address || ''}
+URL:${business.website_url || ''}
+NOTE:${business.description || ''}
+${photoData ? `PHOTO;ENCODING=b;TYPE=JPEG:${photoData}\n` : ''}${business.instagram_link ? `X-SOCIALPROFILE;TYPE=instagram:${business.instagram_link}\n` : ''}${business.youtube_link ? `X-SOCIALPROFILE;TYPE=youtube:${business.youtube_link}\n` : ''}${business.facebook_link ? `X-SOCIALPROFILE;TYPE=facebook:${business.facebook_link}\n` : ''}${business.pinterest_link ? `X-SOCIALPROFILE;TYPE=pinterest:${business.pinterest_link}\n` : ''}END:VCARD`
 
     const blob = new Blob([vcf], { type: 'text/vcard' })
     const url = URL.createObjectURL(blob)
