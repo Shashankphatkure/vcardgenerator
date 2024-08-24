@@ -6,32 +6,65 @@ import Image from 'next/image';
 export default function ImageVCF() {
   const [name, setName] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
-  const [image, setImage] = useState(null);
+  const [imageUrl, setImageUrl] = useState('');
+  const [imageData, setImageData] = useState(null);
   const [vcfData, setVcfData] = useState(null);
+  const [error, setError] = useState('');
 
-  const handleImageUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
+  const validateAndFetchImage = async () => {
+    setError('');
+    if (!imageUrl) {
+      setError('Please enter an image URL');
+      return false;
+    }
+
+    try {
+      const response = await fetch(`/api/proxy-image?url=${encodeURIComponent(imageUrl)}`);
+      if (!response.ok) throw new Error('Failed to fetch image');
+      
+      const contentType = response.headers.get('content-type');
+      if (!['image/jpeg', 'image/png', 'image/gif'].includes(contentType)) {
+        setError('Invalid image format. Please use JPEG, PNG, or GIF.');
+        return false;
+      }
+
+      const blob = await response.blob();
       const reader = new FileReader();
-      reader.onload = (e) => setImage(e.target.result);
-      reader.readAsDataURL(file);
+      reader.onloadend = () => setImageData(reader.result);
+      reader.readAsDataURL(blob);
+      return true;
+    } catch (error) {
+      setError('Error fetching image: ' + error.message);
+      return false;
     }
   };
 
-  const generateVCF = () => {
-    if (!name || !phoneNumber || !image) {
-      alert('Please fill in all fields and upload an image.');
+  const generateVCF = async () => {
+    if (!name || !phoneNumber) {
+      setError('Please fill in all fields.');
       return;
     }
 
-    const vcf = `BEGIN:VCARD
+    const imageValid = await validateAndFetchImage();
+    if (!imageValid) return;
+
+    // Wait for imageData to be set
+    setTimeout(() => {
+      if (!imageData) {
+        setError('Image data not available. Please try again.');
+        return;
+      }
+
+      const imageType = imageData.split(';')[0].split('/')[1];
+      const vcf = `BEGIN:VCARD
 VERSION:3.0
 FN:${name}
 TEL:${phoneNumber}
-PHOTO;ENCODING=b;TYPE=JPEG:${image.split(',')[1]}
+PHOTO;ENCODING=b;TYPE=${imageType.toUpperCase()}:${imageData.split(',')[1]}
 END:VCARD`;
 
-    setVcfData(vcf);
+      setVcfData(vcf);
+    }, 100);
   };
 
   return (
@@ -53,9 +86,10 @@ END:VCARD`;
           className="border p-2 mr-2"
         />
         <input
-          type="file"
-          accept="image/*"
-          onChange={handleImageUpload}
+          type="url"
+          placeholder="Image URL"
+          value={imageUrl}
+          onChange={(e) => setImageUrl(e.target.value)}
           className="border p-2"
         />
       </div>
@@ -65,10 +99,11 @@ END:VCARD`;
       >
         Generate VCF
       </button>
-      {image && (
+      {error && <p className="text-red-500 mt-2">{error}</p>}
+      {imageUrl && (
         <div className="mt-4">
-          <h2 className="text-xl font-bold mb-2">Uploaded Image:</h2>
-          <Image src={image} alt="Uploaded" width={200} height={200} />
+          <h2 className="text-xl font-bold mb-2">Image Preview:</h2>
+          <Image src={imageUrl} alt="Preview" width={200} height={200} />
         </div>
       )}
       {vcfData && (
