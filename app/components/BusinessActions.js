@@ -29,6 +29,11 @@ export default function BusinessActions({ business }) {
       coverImageData = await fetchImageData(business.cover_image_url);
     }
 
+    const truncate = (str, maxLength) => {
+      if (!str) return '';
+      return str.length <= maxLength ? str : str.slice(0, maxLength - 3) + '...';
+    };
+
     const formatBusinessHours = (hours) => {
       if (!hours || !hours.open || !hours.close) return '';
       return `${hours.open}-${hours.close}`;
@@ -41,34 +46,29 @@ export default function BusinessActions({ business }) {
         .join(';');
     }
 
-    const truncateDescription = (description, maxLength = 1000) => {
-      if (description.length <= maxLength) return description;
-      return description.slice(0, maxLength - 3) + '...';
-    };
-
     const vcf = `BEGIN:VCARD
 VERSION:3.0
-FN:${business.name}
-ORG:${business.name}
-TEL:${business.phone_number || ''}
-EMAIL:${business.email || ''}
-ADR:;;${business.address || ''}
-URL:${business.website_url || ''}
-NOTE:${truncateDescription(business.description || '')}
+FN:${truncate(business.name, 100)}
+ORG:${truncate(business.name, 100)}
+TEL:${truncate(business.phone_number, 20) || ''}
+EMAIL:${truncate(business.email, 100) || ''}
+ADR:;;${truncate(business.address, 200) || ''}
+URL:${truncate(business.website_url, 200) || ''}
+NOTE:${truncate(business.description, 1000) || ''}
 ${logoData ? `PHOTO;ENCODING=b;TYPE=JPEG:${logoData}\n` : ''}
 ${coverImageData ? `X-COVER-IMAGE;ENCODING=b;TYPE=JPEG:${coverImageData}\n` : ''}
-${business.instagram_link ? `X-SOCIALPROFILE;TYPE=instagram:${business.instagram_link}\n` : ''}
-${business.youtube_link ? `X-SOCIALPROFILE;TYPE=youtube:${business.youtube_link}\n` : ''}
-${business.facebook_link ? `X-SOCIALPROFILE;TYPE=facebook:${business.facebook_link}\n` : ''}
-${business.pinterest_link ? `X-SOCIALPROFILE;TYPE=pinterest:${business.pinterest_link}\n` : ''}
-${businessHoursString ? `X-BUSINESS-HOURS:${businessHoursString}\n` : ''}
+${business.instagram_link ? `X-SOCIALPROFILE;TYPE=instagram:${truncate(business.instagram_link, 200)}\n` : ''}
+${business.youtube_link ? `X-SOCIALPROFILE;TYPE=youtube:${truncate(business.youtube_link, 200)}\n` : ''}
+${business.facebook_link ? `X-SOCIALPROFILE;TYPE=facebook:${truncate(business.facebook_link, 200)}\n` : ''}
+${business.pinterest_link ? `X-SOCIALPROFILE;TYPE=pinterest:${truncate(business.pinterest_link, 200)}\n` : ''}
+${businessHoursString ? `X-BUSINESS-HOURS:${truncate(businessHoursString, 500)}\n` : ''}
 END:VCARD`
 
     const blob = new Blob([vcf], { type: 'text/vcard' })
     const url = URL.createObjectURL(blob)
     const link = document.createElement('a')
     link.href = url
-    link.download = `${business.name}.vcf`
+    link.download = `${truncate(business.name, 50)}.vcf`
     document.body.appendChild(link)
     link.click()
     document.body.removeChild(link)
